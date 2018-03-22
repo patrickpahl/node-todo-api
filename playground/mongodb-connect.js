@@ -21,7 +21,7 @@ MongoClient.connect('mongodb://localhost:27017/TodoApp', (err,client) => {
   db.collection('Todos').insertOne({  // Insert a record in the db.
     // collection takes one argument, the name of the db you want to insert in to.
     // First we provide the data, second we provide the callback function
-    text: 'Walk the dog',
+    text: 'code in node',
     completed: true
   }, (err, result) => {
     if (err) {
