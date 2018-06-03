@@ -18,14 +18,14 @@ const db = client.db('TodoApp')
 // });
 
 // Delete one
-// db.collection('Todos').deleteOne({text: 'Pay bills'}).then((result) => {
-//   console.log(result);
-// });
-
-// Find one and delete it. In terminal it will show you the value and then delete it.
-db.collection('Todos').findOneAndDelete({text: 'Buy tires'}).then((result) => {
+db.collection('Todos').deleteOne({text: 'Something to do'}).then((result) => {
   console.log(result);
 });
+
+// Find one and delete it. In terminal it will show you the value and then delete it.
+// db.collection('Todos').findOneAndDelete({text: 'Buy tires'}).then((result) => {
+//   console.log(result);
+// });
 
   //client.close();
 })
