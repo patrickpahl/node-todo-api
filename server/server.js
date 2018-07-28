@@ -2,7 +2,8 @@
 // Store the libaries in a variable
 var express = require('express');
 var bodyParser = require('body-parser');
-
+var {ObjectID} = require('mongodb'); // ObjectID is mongo's unique identifier
+// We're using ObjectID below to validate it below
 
 // LOCAL IMPORTS:
 // Pulling off the mongoose property, var {mongoose}, is ES6 destructuring.
@@ -30,12 +31,35 @@ app.post('/todos', (req, res) => {
   });
 });
 
+// GET all todos
 app.get('/todos', (req, res) => {
   Todo.find().then((todos) => {
     res.send({todos});
   }, (e) => {
     res.status(400).send(e);
   })
+});
+
+// GET a todo by id
+app.get('/todos/:id', (req, res) => {
+  var id = req.params.id;
+
+  // If ObjectID is NOT valid, we send the user back a 404
+  if (!ObjectID.isValid(id)) {
+    return res.status(404).send();
+  }
+
+  Todo.findById(id).then((todo) => {
+    // If there actually isn't a todo, we want to respond with a 404
+    if (!todo) {
+      return res.status(404).send();
+    }
+    // Line below is the success case
+    res.send({todo});
+    // {todo} is attached as the todo property. More flexibility to add custom status codes
+  }).catch((e) => {         // Catch an error here if we don't find the todo id entered
+    res.status(400).send();
+  });
 });
 
 app.listen(3000, () => {
