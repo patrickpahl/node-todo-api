@@ -16,7 +16,7 @@ completed: {
   default: false    // todo can't be true when you create it.
 },
 completedAt: {
-  // Unix timestamp
+  // Unix timestamp, which is a Number
   type: Number,
   default: null   // Bc the new todo isn't complete, it won't have a completed date
 }
