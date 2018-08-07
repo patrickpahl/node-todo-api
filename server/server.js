@@ -2,7 +2,8 @@
 // Store the libaries in a variable
 var express = require('express');
 var bodyParser = require('body-parser');
-
+var {ObjectID} = require('mongodb'); // ObjectID is mongo's unique identifier
+// We're using ObjectID below to validate it below
 
 // LOCAL IMPORTS:
 // Pulling off the mongoose property, var {mongoose}, is ES6 destructuring.
@@ -10,8 +11,18 @@ var {mongoose} = require('./db/mongoose.js');
 var {Todo} = require('./models/todo.js')
 var {User} = require('./models/user.js')
 
+//** In package.json, add this under scripts. Tells heroku how to start app.
+//"start": "node server/server.js",
+//** Also tell heroku which version of node you're using here:
+//"engines": {
+//  "node": "9.2.1"
+//},
+
 // app stores our express application
 var app = express();
+
+const port = process.env.PORT || 3000;
+// Port may or may not be set on heroku, otherwise use localhost 3000
 
 app.use(bodyParser.json());
 // Configure the middleware
@@ -30,16 +41,39 @@ app.post('/todos', (req, res) => {
   });
 });
 
-// app.get('/todos', (req, res)) => {
-//   Todo.find().then((todos) => {
-//     res.send({todos});
-//   }, (e) => {
-//     res.status(400).send(e);
-//   })
-// };
+// GET all todos
+app.get('/todos', (req, res) => {
+  Todo.find().then((todos) => {
+    res.send({todos});
+  }, (e) => {
+    res.status(400).send(e);
+  })
+});
 
-app.listen(3000, () => {
-  console.log('Started on port 3000');
+// GET a todo by id
+app.get('/todos/:id', (req, res) => {
+  var id = req.params.id;
+
+  // If ObjectID is NOT valid, we send the user back a 404
+  if (!ObjectID.isValid(id)) {
+    return res.status(404).send();
+  }
+
+  Todo.findById(id).then((todo) => {
+    // If there actually isn't a todo, we want to respond with a 404
+    if (!todo) {
+      return res.status(404).send();
+    }
+    // Line below is the success case
+    res.send({todo});
+    // {todo} is attached as the todo property. More flexibility to add custom status codes
+  }).catch((e) => {         // Catch an error here if we don't find the todo id entered
+    res.status(400).send();
+  });
+});
+
+app.listen(port, () => {
+  console.log(`Started on port ${port}`);
 });
 
 
@@ -55,7 +89,6 @@ app.listen(3000, () => {
 // }, (e) => {
 //   console.log('Unable to save Todo.', e);
 // });
-
 
 
 // var newUser = new User({
