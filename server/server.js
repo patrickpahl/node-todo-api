@@ -11,8 +11,18 @@ var {mongoose} = require('./db/mongoose.js');
 var {Todo} = require('./models/todo.js')
 var {User} = require('./models/user.js')
 
+//** In package.json, add this under scripts. Tells heroku how to start app.
+//"start": "node server/server.js",
+//** Also tell heroku which version of node you're using here:
+//"engines": {
+//  "node": "9.2.1"
+//},
+
 // app stores our express application
 var app = express();
+
+const port = process.env.PORT || 3000;
+// Port may or may not be set on heroku, otherwise use localhost 3000
 
 app.use(bodyParser.json());
 // Configure the middleware
@@ -62,8 +72,8 @@ app.get('/todos/:id', (req, res) => {
   });
 });
 
-app.listen(3000, () => {
-  console.log('Started on port 3000');
+app.listen(port, () => {
+  console.log(`Started on port ${port}`);
 });
 
 
