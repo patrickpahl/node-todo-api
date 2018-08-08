@@ -1,8 +1,9 @@
 // LIBRARY IMPORTS:
-// Store the libaries in a variable
-var express = require('express');
-var bodyParser = require('body-parser');
-var {ObjectID} = require('mongodb'); // ObjectID is mongo's unique identifier
+// Store the libaries in a const
+const _ = require('lodash');
+const express = require('express');
+const bodyParser = require('body-parser');
+const {ObjectID} = require('mongodb'); // ObjectID is mongo's unique identifier
 // We're using ObjectID below to validate it below
 
 // LOCAL IMPORTS:
@@ -27,7 +28,7 @@ const port = process.env.PORT || 3000;
 app.use(bodyParser.json());
 // Configure the middleware
 
-// POST ROUTE: url and call back func
+// ***POST a todo
 app.post('/todos', (req, res) => {
   console.log(req.body); // request body, where the body is stored by body parser
 
@@ -41,7 +42,7 @@ app.post('/todos', (req, res) => {
   });
 });
 
-// GET all todos
+// ***GET all todos
 app.get('/todos', (req, res) => {
   Todo.find().then((todos) => {
     res.send({todos});
@@ -50,7 +51,7 @@ app.get('/todos', (req, res) => {
   })
 });
 
-// GET a todo by id
+// ***GET a todo by id
 app.get('/todos/:id', (req, res) => {
   var id = req.params.id;
 
@@ -72,6 +73,7 @@ app.get('/todos/:id', (req, res) => {
   });
 });
 
+// ***DELETE a todo
 app.delete('/todos/:id', (req, res) => {
   var id = req.params.id;
 
@@ -86,31 +88,49 @@ app.delete('/todos/:id', (req, res) => {
       return res.status(404).send();
     }
 
-    res.send(todo);
+    res.send({todo});
 
   }).catch((e) => {
     res.status(400).send()
   });
 });
 
+// ***PATCH a todo (UPDATE)
+app.patch('/todos/:id', (req, res) => {
+  var id = req.params.id;
+  //pick takes an object and takes an array of properties you want to pull off, if exists
+  // These are the only two properties the user can update, They can't update the todo id
+  var body = _.pick(req.body, ['text', 'completed']);
+
+  if (!ObjectID.isValid(id)) {
+    return res.status(404).send();
+  }
+
+// Here we're updating the completed property based on what it is now
+//Checking if completed is a boolean and is completed
+if (_.isBoolean(body.completed) && body.completed) {
+// Set completed at to getTime(), a js timestamp. Just a regular number.
+  body.completedAt = new Date().getTime();
+} else {
+  body.completed = false;
+  body.completedAt = null;
+}
+
+// Have to use mongodb operators like increment or set. Set takes key-value pairs
+Todo.findByIdAndUpdate(id, {$set: body}, {new: true}).then((todo) => {
+  if (!todo) {
+    return res.status(404).send();
+  }
+
+res.send({todo});
+}).catch((e) => {
+  res.status(400).send();
+})
+});
+
 app.listen(port, () => {
   console.log(`Started on port ${port}`);
 });
-
-
-// var oneMoreTodo = new Todo({
-//   text: 'Code in Swift later today',
-//   completed: false,
-//   type: 10000000
-// })
-
-// This is responsible for actually saving it to the database
-// oneMoreTodo.save().then((doc) => {
-//   console.log(JSON.stringify(doc, undefined, 2));  // undefined is for filter, 2 is for indenting
-// }, (e) => {
-//   console.log('Unable to save Todo.', e);
-// });
-
 
 // var newUser = new User({
 //   email: 'puff@gmail.com'
