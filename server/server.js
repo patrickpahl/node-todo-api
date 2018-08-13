@@ -98,6 +98,7 @@ app.delete('/todos/:id', (req, res) => {
 // ***PATCH a todo (UPDATE)
 app.patch('/todos/:id', (req, res) => {
   var id = req.params.id;
+
   //pick takes an object and takes an array of properties you want to pull off, if exists
   // These are the only two properties the user can update, They can't update the todo id
   var body = _.pick(req.body, ['text', 'completed']);
@@ -116,7 +117,9 @@ if (_.isBoolean(body.completed) && body.completed) {
   body.completedAt = null;
 }
 
+// Set values on our object:
 // Have to use mongodb operators like increment or set. Set takes key-value pairs
+// Setting the body variable. 'new' means we get the new object back.
 Todo.findByIdAndUpdate(id, {$set: body}, {new: true}).then((todo) => {
   if (!todo) {
     return res.status(404).send();
