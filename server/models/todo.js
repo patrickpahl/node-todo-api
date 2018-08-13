@@ -1,7 +1,6 @@
 //We don't have to load in the mongoose js file we created, just the library here:
 var mongoose = require('mongoose');
 
-
 //Create model for everything we want to store.
 // First is the name of the model, Second we define the object
 var Todo = mongoose.model('Todo', {
