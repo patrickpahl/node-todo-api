@@ -99,6 +99,7 @@ app.delete('/todos/:id', (req, res) => {
 app.patch('/todos/:id', (req, res) => {
   var id = req.params.id;
 
+  //pick is from lodash
   //pick takes an object and takes an array of properties you want to pull off, if exists
   // These are the only two properties the user can update, They can't update the todo id
   var body = _.pick(req.body, ['text', 'completed']);
@@ -132,12 +133,20 @@ res.send({todo});
 });
 
 // *** Post /users
+app.post('/users', (req, res) => {
+  //pick is from lodash
+  //First argument is the object we want to pick from, Second argument is an array of things we will pick from
+  var body = _.pick(req.body, ['email', 'password']);
+  //Pass in the object we need (body) to create the new user
+  var user = new User(body);
 
-////// LEFT OFF HERE
-
-
-
-
+//Call to save to the database: success/fail case after
+  user.save().then((user) => {
+    res.send(user);
+  }).catch((e) => {
+    res.status(400).send(e);
+  })
+});
 
 
 
