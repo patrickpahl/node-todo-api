@@ -3,8 +3,7 @@ const mongoose = require('mongoose');
 const validator = require('validator')
 // Used to validate the email address is in the correct format
 
-// User model
-var User = mongoose.model('User', {
+var UserSchema =  new mongoose.Schema({
   email: {
     type: String,
     required: true,
@@ -36,6 +35,20 @@ var User = mongoose.model('User', {
     }
   }]
 });
+// It stores the properties of a user
+
+//Instance methods on a user
+// NOT using an arrow function here, they do NOT bind a this keyword. This stores the individual doc
+UserSchema.methods.generateAuthToken = function () {
+  var user = this; // Making it clear what THIS is
+
+
+  ////// left off Here
+
+}
+
+// User model
+var User = mongoose.model('User', UserSchema);
 
 // Make it exportable for other files
 module.exports = {
