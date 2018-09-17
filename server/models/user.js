@@ -1,7 +1,8 @@
 const mongoose = require('mongoose');
 // Get the mongoose library, not the mongoose js file we created.
-const validator = require('validator')
+const validator = require('validator');
 // Used to validate the email address is in the correct format
+const jwt = require('jsonwebtoken');
 
 var UserSchema =  new mongoose.Schema({
   email: {
@@ -41,11 +42,19 @@ var UserSchema =  new mongoose.Schema({
 // NOT using an arrow function here, they do NOT bind a this keyword. This stores the individual doc
 UserSchema.methods.generateAuthToken = function () {
   var user = this; // Making it clear what THIS is
+  var access = 'auth';
+  // First is object we want to sign, second is a secret value that we will have in a config var
+  var token = jwt.sign({_id: user._id.toHexString(), access}, 'abc123').toString();
 
+  // Update the local user model
+  // Concat on a new object with those two properties- access and token
+  user.tokens = user.tokens.concat([{access, token}]);
 
-  ////// left off Here
-
-}
+  // Save the user model
+  return user.save().then(() => {
+    return token;
+  });
+};
 
 // User model
 var User = mongoose.model('User', UserSchema);

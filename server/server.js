@@ -42,7 +42,7 @@ app.post('/todos', (req, res) => {
   });
 });
 
-// ***GET all todos
+// ***GET all todos     .get is built into express
 app.get('/todos', (req, res) => {
   Todo.find().then((todos) => {
     res.send({todos});
@@ -140,15 +140,17 @@ app.post('/users', (req, res) => {
   //Pass in the object we need (body) to create the new user
   var user = new User(body);
 
-//Call to save to the database: success/fail case after
-  user.save().then((user) => {
-    res.send(user);
+  //Call to save to the database: success/fail case after
+  user.save().then(() => {
+    return user.generateAuthToken();
+  }).then((token) => {
+    // 'x-auth' is a custom header bc we're using a jwt token scheme
+    // 2nd argument is the token
+    res.header('x-auth', token).send(user);
   }).catch((e) => {
     res.status(400).send(e);
   })
 });
-
-
 
 app.listen(port, () => {
   console.log(`Started on port ${port}`);
