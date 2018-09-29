@@ -4,6 +4,7 @@ const validator = require('validator');
 // Used to validate the email address is in the correct format
 const jwt = require('jsonwebtoken');
 const _ = require('lodash');
+const bcrypt = require('bcryptjs');
 
 // Schema allows us to tack on custom methods
 var UserSchema =  new mongoose.Schema({
@@ -88,6 +89,25 @@ UserSchema.statics.findByToken = function(token) {
     'tokens.access': 'auth'
   });
 }
+
+// PRE: Runs code before an event
+// This method is going to be called with next argument. Need it or method won't ever complete
+UserSchema.pre('save', function(next) {
+  var user = this;
+  // modified: returns true if the thing i.e. password is modified, else false
+  if (user.isModified('password')) {
+    bcrypt.genSalt(10, (err, salt) => {
+    bcrypt.hash(user.password, salt, (err, hash) => {
+    // 3 arguments- 1: password from user object, 2: salt var, 3: callback
+    user.password = hash;
+    next();
+  });
+  });
+  } else {
+    // If password is not modified, carry on with next
+    next();
+  }
+});
 
 // User model
 var User = mongoose.model('User', UserSchema);
