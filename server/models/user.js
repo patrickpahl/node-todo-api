@@ -3,7 +3,9 @@ const mongoose = require('mongoose');
 const validator = require('validator');
 // Used to validate the email address is in the correct format
 const jwt = require('jsonwebtoken');
+const _ = require('lodash');
 
+// Schema allows us to tack on custom methods
 var UserSchema =  new mongoose.Schema({
   email: {
     type: String,
@@ -38,10 +40,19 @@ var UserSchema =  new mongoose.Schema({
 });
 // It stores the properties of a user
 
+// Determines what is sent back when a user model is converted to a JSON value
+UserSchema.methods.toJSON = function() {
+var user = this;
+var userObject = user.toObject();
+// This method converts Mongoose var (user) to object where only the properties on the document exist
+return _.pick(userObject, ['_id', 'email']);
+// Use lodash to pick properties off the object- only picking id and email here
+}
+
 //Instance methods on a user
 // NOT using an arrow function here, they do NOT bind a this keyword. This stores the individual doc
 UserSchema.methods.generateAuthToken = function () {
-  var user = this; // Making it clear what THIS is
+  var user = this; // Making it clear what THIS is, THIS stores the individual document
   var access = 'auth';
   // First is object we want to sign, second is a secret value that we will have in a config var
   var token = jwt.sign({_id: user._id.toHexString(), access}, 'abc123').toString();
