@@ -11,6 +11,7 @@ const {ObjectID} = require('mongodb'); // ObjectID is mongo's unique identifier
 var {mongoose} = require('./db/mongoose.js');
 var {Todo} = require('./models/todo.js')
 var {User} = require('./models/user.js')
+var {authenticate} = require('./middleware/authenticate.js');
 
 //* In package.json, add this under scripts. Tells heroku how to start app.
 //"start": "node server/server.js",
@@ -152,16 +153,11 @@ app.post('/users', (req, res) => {
   })
 });
 
+/// *** Gets logged in user by token
+app.get('/users/me', authenticate, (req, res) => {
+  res.send(req.user);
+});
+
 app.listen(port, () => {
   console.log(`Started on port ${port}`);
 });
-
-// var newUser = new User({
-//   email: 'puff@gmail.com'
-// });
-//
-// newUser.save().then((doc) => {
-//   console.log(JSON.stringify(doc, undefined, 2));
-// }, (e) => {
-//   console.log('Cant save user', e);
-// });

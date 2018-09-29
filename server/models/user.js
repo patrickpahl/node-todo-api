@@ -67,6 +67,28 @@ UserSchema.methods.generateAuthToken = function () {
   });
 };
 
+// Method takes a token, validates it, then returns it
+// Model Method, not instance method. Instance methods get called with the individual document, i.e. user
+// Model Methods get called with the actual model as the 'this' binding i.e. User
+UserSchema.statics.findByToken = function(token) {
+  var User = this;
+  var decoded;
+  // Stores the decoded jwt values
+  try {
+    decoded = jwt.verify(token, 'abc123');
+  } catch (e) {
+    // If error, we reject and don't find a user
+    return Promise.reject();
+  }
+  // Success case: Find the user if any
+  return User.findOne({
+    // Looking for user where the id matches the one inside the token
+    '_id': decoded._id,
+    'tokens.token': token,
+    'tokens.access': 'auth'
+  });
+}
+
 // User model
 var User = mongoose.model('User', UserSchema);
 
