@@ -133,7 +133,7 @@ res.send({todo});
 })
 });
 
-// *** Post /users
+// *** POST /users
 app.post('/users', (req, res) => {
   //pick is from lodash
   //First argument is the object we want to pick from, Second argument is an array of things we will pick from
@@ -156,6 +156,20 @@ app.post('/users', (req, res) => {
 /// *** Gets logged in user by token
 app.get('/users/me', authenticate, (req, res) => {
   res.send(req.user);
+});
+
+///*** POST /users/login {email, password}, getting a token
+app.post('/users/login', (req, res) => {
+var body = _.pick(req.body, ['email', 'password']);
+
+User.findByCredentials(body.email, body.password).then((user) => {
+    return user.generateAuthToken().then((token) => {
+      res.header('x-auth', token).send(user);
+    });
+    //res.send(user); // Only sent user back for postman example
+  }).catch((e) => {
+    res.status(400).send();
+  });
 });
 
 app.listen(port, () => {

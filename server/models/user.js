@@ -109,6 +109,30 @@ UserSchema.pre('save', function(next) {
   }
 });
 
+// Method for logging in, checking if email and password match
+UserSchema.statics.findByCredentials = function (email, password) {
+  var User = this;
+
+  // returning this, chaining this promise in server.js
+  return User.findOne({email}).then((user) => {
+    if (!user) {
+      return Promise.reject();
+    }
+
+    return new Promise((resolve, reject) => {
+      // Use bcrypt to compare password to hashed password (user.password)
+      bcrypt.compare(password, user.password, (err, res) => {
+      // 1. Plain password, 2. Hash password 3. callback func
+      if (res) {
+        resolve(user);
+      } else {
+        reject();
+      }
+    });
+    });
+  });
+};
+
 // User model
 var User = mongoose.model('User', UserSchema);
 
