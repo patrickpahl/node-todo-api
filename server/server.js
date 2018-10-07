@@ -30,11 +30,12 @@ app.use(bodyParser.json());
 // Configure the middleware
 
 // ***POST a todo
-app.post('/todos', (req, res) => {
+app.post('/todos', authenticate, (req, res) => {
   console.log(req.body); // request body, where the body is stored by body parser
 
   var todo = new Todo({
-    text: req.body.text
+    text: req.body.text,
+    _creator: req.user._id
   });
   todo.save().then((doc) => {
     res.send(doc); // If the save is successful, send info back to the user, i.e. ID of todo
@@ -44,8 +45,10 @@ app.post('/todos', (req, res) => {
 });
 
 // ***GET all todos     .get is built into express
-app.get('/todos', (req, res) => {
-  Todo.find().then((todos) => {
+app.get('/todos', authenticate, (req, res) => {
+  Todo.find({
+    _creator: req.user._id   // Query by user to only get his todos
+  }).then((todos) => {
     res.send({todos});
   }, (e) => {
     res.status(400).send(e);
@@ -53,7 +56,7 @@ app.get('/todos', (req, res) => {
 });
 
 // ***GET a todo by id
-app.get('/todos/:id', (req, res) => {
+app.get('/todos/:id', authenticate, (req, res) => {
   var id = req.params.id;
 
   // If ObjectID is NOT valid, we send the user back a 404
@@ -61,10 +64,15 @@ app.get('/todos/:id', (req, res) => {
     return res.status(404).send();
   }
 
-  Todo.findById(id).then((todo) => {
-    // If there actually isn't a todo, we want to respond with a 404
+Todo.findOne({
+  _id: id,
+  _creator: req.user._id
+}).then((todo) => {
+  //Todo.findById(id).then((todo) => {  // Old way to just find any object with an ID
+
     if (!todo) {
       return res.status(404).send();
+      // If there actually isn't a todo, we want to respond with a 404
     }
     // Line below is the success case
     res.send({todo});
@@ -75,7 +83,7 @@ app.get('/todos/:id', (req, res) => {
 });
 
 // ***DELETE a todo
-app.delete('/todos/:id', (req, res) => {
+app.delete('/todos/:id', authenticate, (req, res) => {
   var id = req.params.id;
 
   // If ObjectID is NOT valid, we send the user back a 404
@@ -83,8 +91,11 @@ app.delete('/todos/:id', (req, res) => {
     return res.status(404).send();
   }
 
-  Todo.findByIdAndRemove(id).then((todo) => {
-
+Todo.findOneAndRemove({
+  _id: id,
+  _creator: req.user._id
+}). then((todo) => {
+  //Todo.findByIdAndRemove(id).then((todo) => {
     if (!todo) {
       return res.status(404).send();
     }
@@ -97,9 +108,8 @@ app.delete('/todos/:id', (req, res) => {
 });
 
 // ***PATCH a todo (UPDATE)
-app.patch('/todos/:id', (req, res) => {
+app.patch('/todos/:id', authenticate, (req, res) => {
   var id = req.params.id;
-
   //pick is from lodash
   //pick takes an object and takes an array of properties you want to pull off, if exists
   // These are the only two properties the user can update, They can't update the todo id
@@ -122,7 +132,12 @@ if (_.isBoolean(body.completed) && body.completed) {
 // Set values on our object:
 // Have to use mongodb operators like increment or set. Set takes key-value pairs
 // Setting the body variable. 'new' means we get the new object back.
-Todo.findByIdAndUpdate(id, {$set: body}, {new: true}).then((todo) => {
+Todo.findOneAndUpdate({
+  _id: id,
+  _creator: req.user._id},
+  {$set: body},
+  {new: true}).then((todo) => {
+//Todo.findByIdAndUpdate(id, {$set: body}, {new: true}).then((todo) => {   // Old way to find an id and update
   if (!todo) {
     return res.status(404).send();
   }
