@@ -68,6 +68,21 @@ UserSchema.methods.generateAuthToken = function () {
   });
 };
 
+// Remove Token
+UserSchema.methods.removeToken =  function(token) {
+  var user = this;
+  // $pull is a mongoDB operator, lets you pull items from an array that meet certain criteria
+  // Pulling on the user, from the tokens array, a token that matches the token we provided in the method
+  return user.update({
+    // Returning allows us to chain together our call
+    $pull: {
+      tokens: {
+        token: token
+      }
+    }
+  });
+};
+
 // Method takes a token, validates it, then returns it
 // Model Method, not instance method. Instance methods get called with the individual document, i.e. user
 // Model Methods get called with the actual model as the 'this' binding i.e. User

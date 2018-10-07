@@ -172,6 +172,17 @@ User.findByCredentials(body.email, body.password).then((user) => {
   });
 });
 
+/// *** DELETE /users/me/token
+app.delete('/users/me/token', authenticate, (req, res) => {
+  // Route, calling authenticate middleware, and then our callback
+  req.user.removeToken(req.token).then(() => {
+    // Using removeToken method from user. Don't need anything back from .then, just send the status code back
+    res.status(200).send();
+  }), () => {
+    res.status(400).send()
+  };
+});
+
 app.listen(port, () => {
   console.log(`Started on port ${port}`);
 });
