@@ -56,7 +56,7 @@ UserSchema.methods.generateAuthToken = function () {
   var user = this; // Making it clear what THIS is, THIS stores the individual document
   var access = 'auth';
   // First is object we want to sign, second is a secret value that we will have in a config var
-  var token = jwt.sign({_id: user._id.toHexString(), access}, 'abc123').toString();
+  var token = jwt.sign({_id: user._id.toHexString(), access}, process.env.JWT_SECRET).toString();
 
   // Update the local user model
   // Concat on a new object with those two properties- access and token
@@ -91,7 +91,7 @@ UserSchema.statics.findByToken = function(token) {
   var decoded;
   // Stores the decoded jwt values
   try {
-    decoded = jwt.verify(token, 'abc123');
+    decoded = jwt.verify(token, process.env.JWT_SECRET);
   } catch (e) {
     // If error, we reject and don't find a user
     return Promise.reject();

@@ -1,5 +1,6 @@
+require('./config/config.js');
+
 // LIBRARY IMPORTS:
-// Store the libaries in a const
 const _ = require('lodash');
 const express = require('express');
 const bodyParser = require('body-parser');
@@ -23,7 +24,7 @@ var {authenticate} = require('./middleware/authenticate.js');
 // app stores our express application
 var app = express();
 
-const port = process.env.PORT || 3000;
+const port = process.env.PORT;
 // Port may or may not be set on heroku, otherwise use localhost 3000
 
 app.use(bodyParser.json());
@@ -201,3 +202,5 @@ app.delete('/users/me/token', authenticate, (req, res) => {
 app.listen(port, () => {
   console.log(`Started on port ${port}`);
 });
+
+module.exports = {app};
